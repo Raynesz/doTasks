@@ -39,6 +39,27 @@ export default function App() {
     setTaskItems(newTasks);
   }
 
+  const handleChangeStatus = (index:number): void => {
+    const newTasks = taskItems.slice();
+    switch(taskItems[index].status) {
+      case 'default':
+        taskItems[index].status = 'green';
+        break;
+      case 'green':
+        taskItems[index].status = 'yellow';
+        break;
+      case 'yellow':
+        taskItems[index].status = 'red';
+        break;
+      case 'red':
+        taskItems[index].status = 'fuchsia';
+        break;
+      default:
+        taskItems[index].status = 'default';
+    }
+    setTaskItems(newTasks);
+  }
+
   const handleDeleteSelected = () => {
     setTaskItems(taskItems.filter(taskItem => !taskItem.selected));
   }
@@ -86,7 +107,7 @@ export default function App() {
                 <TouchableOpacity key={index}  
                 //onPress={() => completeTask(index)}
                 >
-                  <Task item={item} index={index} selectFunc={handleSelectTask} /> 
+                  <Task item={item} index={index} selectFunc={handleSelectTask} changeStatusFunc={handleChangeStatus} /> 
                 </TouchableOpacity>
               )
             })
