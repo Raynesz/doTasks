@@ -1,6 +1,6 @@
 import React, { FunctionComponent} from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { TaskItem } from '../App';
+import { colors, TaskItem } from './constants';
 
 interface Props {
   item: TaskItem, index: number, selectFunc: (index: number)=>void, changeStatusFunc: (index: number)=>void
@@ -17,30 +17,10 @@ export const Task: FunctionComponent<Props> = (props) => {
     circularBorderWidth = 2;
   }
 
-  let statusColor: string;
-  let statusOpacity: number = 1;
-  switch(props.item.status) {
-    case 'green':
-      statusColor = '#57F287';
-      break;
-    case 'yellow':
-      statusColor = '#FEE75C';
-      break;
-    case 'red':
-      statusColor = '#ED4245';
-      break;
-    case 'fuchsia':
-      statusColor = '#EB459E';
-      break;
-    default:
-      statusColor = '#5865F2';
-      statusOpacity = 0.4;
-  }
-
   return (
     <View style={[styles.task,  {borderColor: props.item.selected? '#5865F2' : '#FFF'}]}>
       <View style={styles.taskLeft}>
-        <Pressable style={[styles.square, {backgroundColor: statusColor, opacity: statusOpacity}]} 
+        <Pressable style={[styles.square, {backgroundColor: colors[props.item.status], opacity: props.item.status === 0 ? 0.4 : 1}]} 
         onPress={()=>props.changeStatusFunc(props.index)} />
         <Text style={styles.taskText}>{props.item.text}</Text>
       </View>

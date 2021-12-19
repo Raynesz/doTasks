@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, TouchableOpacity } from 'react-native';
-import Task from './components/Task';
-
-export interface TaskItem {
-  text: string;
-  status: string;
-  selected: boolean;
-}
+import { colors, TaskItem } from './src/constants'
+import Task from './src/Task';
 
 export default function App() {
   let newTasks: TaskItem[] = [];
   for (let i=0; i<15; i++) {
     let newTask: TaskItem = {
       text: 'Task'+i,
-      status: 'default',
+      status: 0,
       selected: false
     }
     newTasks.push(newTask);
@@ -41,22 +36,8 @@ export default function App() {
 
   const handleChangeStatus = (index:number): void => {
     const newTasks = taskItems.slice();
-    switch(taskItems[index].status) {
-      case 'default':
-        taskItems[index].status = 'green';
-        break;
-      case 'green':
-        taskItems[index].status = 'yellow';
-        break;
-      case 'yellow':
-        taskItems[index].status = 'red';
-        break;
-      case 'red':
-        taskItems[index].status = 'fuchsia';
-        break;
-      default:
-        taskItems[index].status = 'default';
-    }
+    if (newTasks[index].status < colors.length - 1) newTasks[index].status++;
+    else newTasks[index].status = 0;
     setTaskItems(newTasks);
   }
 
