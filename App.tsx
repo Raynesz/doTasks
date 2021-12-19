@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   title: {
     paddingTop: 50,
     paddingHorizontal: 20,
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold'
   },
   tasksList: {

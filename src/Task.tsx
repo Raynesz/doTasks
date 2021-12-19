@@ -47,19 +47,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap'
   },
   square: {
-    width: 24,
-    height: 24,
+    width: 30,
+    height: 30,
     borderRadius: 5,
     marginRight: 15,
   },
   taskText: {
     maxWidth: '80%',
+    fontSize: 16,
   },
   circular: {
-    width: 20,
-    height: 20,
+    width: 25,
+    height: 25,
     borderColor: '#5865F2',
-    borderRadius: 10,
+    borderRadius: 13,
   },
 });
 
