@@ -17,8 +17,11 @@ export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>(newTasks);
 
   const handleAddTask = () => {
-    //setTaskItems([...taskItems, task])
-    //setTask(null);
+    setTaskItems([...taskItems, {
+      text: 'New Task',
+      status: 0,
+      selected: false
+    }]);
   }
 
   /*const completeTask = (index) => {
@@ -82,7 +85,7 @@ export default function App() {
       >
       <View style={styles.tasksList}>
           {
-            taskItems.map((item, index) => <Task key={index} item={item} index={index} selectFunc={handleSelectTask} changeStatusFunc={handleChangeStatus} />)
+            taskItems.slice(0).reverse().map((item, index) => <Task key={index} item={item} index={taskItems.length - 1 - index} selectFunc={handleSelectTask} changeStatusFunc={handleChangeStatus} />)
           }
       </View>
       </ScrollView>
