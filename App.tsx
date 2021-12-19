@@ -17,7 +17,6 @@ export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>(newTasks);
 
   const handleAddTask = () => {
-    //Keyboard.dismiss();
     //setTaskItems([...taskItems, task])
     //setTask(null);
   }
@@ -53,7 +52,7 @@ export default function App() {
   }
 
   const addTaskButton = <Pressable
-  style={[styles.button, {backgroundColor: '#5865F2'}]}
+  style={({ pressed }) =>[styles.button, {backgroundColor: pressed ? '#5057E9' : '#5865F2'}]}
   onPress={()=>handleAddTask()}
   accessibilityLabel="Add a new task"
 >
@@ -63,7 +62,7 @@ export default function App() {
   </Pressable>;
 
   const deleteButton = <Pressable
-  style={[styles.button, {backgroundColor: '#ED4245'}]}
+  style={({ pressed }) =>[styles.button, {backgroundColor: pressed ? '#E53437' : '#ED4245'}]}
   onPress={()=>handleDeleteSelected()}
   accessibilityLabel="Delete selected tasks"
 >
@@ -83,15 +82,7 @@ export default function App() {
       >
       <View style={styles.tasksList}>
           {
-            taskItems.map((item, index) => {
-              return (
-                <TouchableOpacity key={index}  
-                //onPress={() => completeTask(index)}
-                >
-                  <Task item={item} index={index} selectFunc={handleSelectTask} changeStatusFunc={handleChangeStatus} /> 
-                </TouchableOpacity>
-              )
-            })
+            taskItems.map((item, index) => <Task key={index} item={item} index={index} selectFunc={handleSelectTask} changeStatusFunc={handleChangeStatus} />)
           }
       </View>
       </ScrollView>
