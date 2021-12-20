@@ -1,15 +1,64 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
+import * as FileSystem from "expo-file-system";
 import { colors, TaskItem } from "./src/constants";
 import Task from "./src/Task";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
 
-  const handleAddTask = () => {
-    const newTasks = taskItems.map((item) => {
+  const unfocus = (tasks: any): TaskItem[] => {
+    const newTasks = tasks.map((item: object) => {
       return { ...item, focused: false };
     });
+    return newTasks;
+  };
+
+  const deselect = (tasks: any): TaskItem[] => {
+    const newTasks = tasks.map((item: object) => {
+      return { ...item, selected: false };
+    });
+    return newTasks;
+  };
+
+  const saveToFile = async (): Promise<void> => {
+    try {
+      await FileSystem.writeAsStringAsync(
+        FileSystem.documentDirectory + "tasks.json",
+        JSON.stringify({ tasks: taskItems })
+      );
+      console.log("Saved to file.");
+    } catch (e: unknown) {
+      if (typeof e === "string") {
+        console.log(e.toUpperCase());
+      } else if (e instanceof Error) {
+        console.log(e.message);
+      }
+    }
+  };
+
+  const loadFromFile = async (): Promise<void> => {
+    try {
+      const contents: any = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "tasks.json");
+      console.log("contents: " + contents);
+      if (contents) setTaskItems(unfocus(deselect(JSON.parse(contents).tasks)));
+      else console.log("Problem reading tasks.json");
+    } catch (e: unknown) {
+      if (typeof e === "string") {
+        console.log(e.toUpperCase());
+      } else if (e instanceof Error) {
+        console.log(e.message);
+      }
+      saveToFile();
+    }
+  };
+
+  useEffect(() => {
+    loadFromFile();
+  }, []);
+
+  const handleAddTask = () => {
+    const newTasks = unfocus(taskItems);
     setTaskItems([
       ...newTasks,
       {
@@ -19,17 +68,17 @@ export default function App() {
         focused: true,
       },
     ]);
+    saveToFile();
   };
 
   const handleSelectTask = (index: number): void => {
-    const newTasks = taskItems.map((item) => {
-      return { ...item, focused: false };
-    });
+    const newTasks = unfocus(taskItems);
     newTasks[index].selected = !newTasks[index].selected;
     setTaskItems(newTasks);
+    saveToFile();
   };
 
-  const handlChangeText = (index: number, changedText: string): void => {
+  const handleChangeText = (index: number, changedText: string): void => {
     const newTasks = taskItems.slice();
     newTasks[index].text = changedText;
     setTaskItems(newTasks);
@@ -40,16 +89,19 @@ export default function App() {
     if (newTasks[index].status < colors.length - 1) newTasks[index].status++;
     else newTasks[index].status = 0;
     setTaskItems(newTasks);
+    saveToFile();
   };
 
   const handleChangeFocus = (index: number): void => {
     const newTasks = taskItems.slice();
     newTasks[index].focused = !newTasks[index].focused;
     setTaskItems(newTasks);
+    saveToFile();
   };
 
   const handleDeleteSelected = () => {
     setTaskItems(taskItems.filter((taskItem) => !taskItem.selected));
+    saveToFile();
   };
 
   const selectedTasksExist = (): boolean => {
@@ -80,6 +132,26 @@ export default function App() {
     </Pressable>
   );
 
+  const testButton1 = (
+    <Pressable
+      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
+      onPress={() => loadFromFile()}
+      accessibilityLabel="test"
+    >
+      <Text style={styles.buttonText}>load</Text>
+    </Pressable>
+  );
+
+  const testButton2 = (
+    <Pressable
+      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
+      onPress={() => saveToFile()}
+      accessibilityLabel="test"
+    >
+      <Text style={styles.buttonText}>save</Text>
+    </Pressable>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tasks</Text>
@@ -101,7 +173,7 @@ export default function App() {
                 selectFunc={handleSelectTask}
                 changeStatusFunc={handleChangeStatus}
                 changeFocusFunc={handleChangeFocus}
-                changeTextFunc={handlChangeText}
+                changeTextFunc={handleChangeText}
               />
             ))}
         </View>

@@ -26,7 +26,7 @@ export const Task: FunctionComponent<Props> = (props) => {
     <TextInput
       style={styles.taskInput}
       onChangeText={(changedText) => props.changeTextFunc(props.index, changedText)}
-      onEndEditing={() => props.changeFocusFunc(props.index)}
+      onBlur={() => props.changeFocusFunc(props.index)}
       value={props.item.text}
       maxLength={100}
       multiline
