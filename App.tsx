@@ -30,7 +30,7 @@ export default function App() {
         FileSystem.documentDirectory + "tasks.json",
         JSON.stringify({ tasks: taskItems })
       );
-      console.log("Saved to file.");
+      //console.log("Saved to file.");
     } catch (e: unknown) {
       if (typeof e === "string") {
         console.log(e.toUpperCase());
@@ -43,7 +43,7 @@ export default function App() {
   const loadFromFile = async (): Promise<void> => {
     try {
       const contents: any = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "tasks.json");
-      console.log("contents: " + contents);
+      //console.log("contents: " + contents);
       if (contents) setTaskItems(unfocus(deselect(JSON.parse(contents).tasks)));
       else console.log("Problem reading tasks.json");
     } catch (e: unknown) {
@@ -61,7 +61,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    saveToFile();
+    if (!focusedTaskExists()) saveToFile();
   }, [taskItems]);
 
   const handleAddTask = () => {
@@ -75,6 +75,7 @@ export default function App() {
         focused: true,
       },
     ]);
+    saveToFile();
   };
 
   const handleSelectTask = (index: number): void => {
@@ -109,6 +110,13 @@ export default function App() {
   const selectedTasksExist = (): boolean => {
     for (let taskItem of taskItems) {
       if (taskItem.selected) return true;
+    }
+    return false;
+  };
+
+  const focusedTaskExists = (): boolean => {
+    for (let taskItem of taskItems) {
+      if (taskItem.focused) return true;
     }
     return false;
   };
@@ -168,32 +176,19 @@ export default function App() {
     </View>
   );
 
-  const testButton1 = (
-    <Pressable
-      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
-      onPress={() => loadFromFile()}
-      accessibilityLabel="test"
-    >
-      <Text style={styles.buttonText}>load</Text>
-    </Pressable>
-  );
-
-  const testButton2 = (
-    <Pressable
-      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
-      onPress={() => saveToFile()}
-      accessibilityLabel="test"
-    >
-      <Text style={styles.buttonText}>save</Text>
-    </Pressable>
-  );
-
   return (
     <View style={styles.container}>
       <StatusBar style="auto" backgroundColor="#ebebeb" translucent={false} />
       <View style={styles.header}>
         <Text style={styles.title}>{viewAbout ? "About" : "Tasks"}</Text>
-        <Pressable style={styles.aboutButton} onPress={() => setViewAbout(!viewAbout)} accessibilityLabel="About" />
+        <Pressable
+          style={styles.aboutButton}
+          onPress={() => {
+            setTaskItems(unfocus(deselect(taskItems)));
+            setViewAbout(!viewAbout);
+          }}
+          accessibilityLabel="About"
+        />
       </View>
       {viewAbout ? <About /> : Tasks}
     </View>

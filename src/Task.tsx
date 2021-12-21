@@ -25,9 +25,11 @@ const Task: FunctionComponent<Props> = (props) => {
   const text = props.item.focused ? (
     <TextInput
       style={styles.taskText}
-      onEndEditing={(e: any) => {
-        props.changeTextFunc(props.index, e.nativeEvent.text);
+      onEndEditing={() => {
         props.changeFocusFunc(props.index);
+      }}
+      onChangeText={(changedText: string) => {
+        props.changeTextFunc(props.index, changedText);
       }}
       defaultValue={props.item.text}
       maxLength={100}
