@@ -25,9 +25,11 @@ export const Task: FunctionComponent<Props> = (props) => {
   const text = props.item.focused ? (
     <TextInput
       style={styles.taskText}
-      onChangeText={(changedText) => props.changeTextFunc(props.index, changedText)}
-      onBlur={() => props.changeFocusFunc(props.index)}
-      value={props.item.text}
+      onEndEditing={(e: any) => {
+        props.changeTextFunc(props.index, e.nativeEvent.text);
+        props.changeFocusFunc(props.index);
+      }}
+      defaultValue={props.item.text}
       maxLength={100}
       multiline
       autoFocus

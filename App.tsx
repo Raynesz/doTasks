@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import * as FileSystem from "expo-file-system";
 import { colors, TaskItem } from "./src/constants";
 import Task from "./src/Task";
@@ -57,6 +58,10 @@ export default function App() {
     loadFromFile();
   }, []);
 
+  useEffect(() => {
+    saveToFile();
+  }, [taskItems]);
+
   const handleAddTask = () => {
     const newTasks = unfocus(taskItems);
     setTaskItems([
@@ -68,14 +73,12 @@ export default function App() {
         focused: true,
       },
     ]);
-    saveToFile();
   };
 
   const handleSelectTask = (index: number): void => {
     const newTasks = unfocus(taskItems);
     newTasks[index].selected = !newTasks[index].selected;
     setTaskItems(newTasks);
-    saveToFile();
   };
 
   const handleChangeText = (index: number, changedText: string): void => {
@@ -89,19 +92,16 @@ export default function App() {
     if (newTasks[index].status < colors.length - 1) newTasks[index].status++;
     else newTasks[index].status = 0;
     setTaskItems(newTasks);
-    saveToFile();
   };
 
   const handleChangeFocus = (index: number): void => {
     const newTasks = taskItems.slice();
     newTasks[index].focused = !newTasks[index].focused;
     setTaskItems(newTasks);
-    saveToFile();
   };
 
   const handleDeleteSelected = () => {
     setTaskItems(taskItems.filter((taskItem) => !taskItem.selected));
-    saveToFile();
   };
 
   const selectedTasksExist = (): boolean => {
@@ -154,6 +154,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" backgroundColor="#ebebeb" translucent={false} />
       <View style={styles.header}>
         <Text style={styles.title}>Tasks</Text>
         <Pressable style={styles.about} accessibilityLabel="About" />
@@ -162,7 +163,8 @@ export default function App() {
         contentContainerStyle={{
           flexGrow: 1,
         }}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="never"
+        onScrollBeginDrag={Keyboard.dismiss}
       >
         <View style={styles.tasksList}>
           {taskItems
@@ -192,7 +194,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    marginTop: 50,
+    paddingVertical: 10,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
