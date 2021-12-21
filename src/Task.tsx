@@ -11,7 +11,7 @@ interface Props {
   changeTextFunc: (index: number, changedText: string) => void;
 }
 
-export const Task: FunctionComponent<Props> = (props) => {
+const Task: FunctionComponent<Props> = (props) => {
   let circularBgColor: string;
   let circularBorderWidth: number;
   if (props.item.selected) {

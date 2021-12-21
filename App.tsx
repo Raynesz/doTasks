@@ -3,9 +3,11 @@ import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard } from "react-n
 import { StatusBar } from "expo-status-bar";
 import * as FileSystem from "expo-file-system";
 import { colors, TaskItem } from "./src/constants";
+import About from "./src/About";
 import Task from "./src/Task";
 
 export default function App() {
+  const [viewAbout, setViewAbout] = useState<boolean>(false);
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
 
   const unfocus = (tasks: any): TaskItem[] => {
@@ -115,7 +117,9 @@ export default function App() {
     taskItems.length <= 20 ? (
       <Pressable
         style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#5057E9" : "#5865F2" }]}
-        onPress={() => handleAddTask()}
+        onPress={() => {
+          handleAddTask();
+        }}
         accessibilityLabel="Add a new task"
       >
         <Text style={styles.buttonText}>Add Task</Text>
@@ -125,40 +129,17 @@ export default function App() {
   const deleteButton = (
     <Pressable
       style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#E53437" : "#ED4245" }]}
-      onPress={() => handleDeleteSelected()}
+      onPress={() => {
+        handleDeleteSelected();
+      }}
       accessibilityLabel="Delete selected tasks"
     >
       <Text style={styles.buttonText}>Delete</Text>
     </Pressable>
   );
 
-  const testButton1 = (
-    <Pressable
-      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
-      onPress={() => loadFromFile()}
-      accessibilityLabel="test"
-    >
-      <Text style={styles.buttonText}>load</Text>
-    </Pressable>
-  );
-
-  const testButton2 = (
-    <Pressable
-      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
-      onPress={() => saveToFile()}
-      accessibilityLabel="test"
-    >
-      <Text style={styles.buttonText}>save</Text>
-    </Pressable>
-  );
-
-  return (
-    <View style={styles.container}>
-      <StatusBar style="auto" backgroundColor="#ebebeb" translucent={false} />
-      <View style={styles.header}>
-        <Text style={styles.title}>Tasks</Text>
-        <Pressable style={styles.about} accessibilityLabel="About" />
-      </View>
+  const Tasks = (
+    <View style={styles.tasks}>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -186,6 +167,37 @@ export default function App() {
       {selectedTasksExist() ? deleteButton : addTaskButton}
     </View>
   );
+
+  const testButton1 = (
+    <Pressable
+      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
+      onPress={() => loadFromFile()}
+      accessibilityLabel="test"
+    >
+      <Text style={styles.buttonText}>load</Text>
+    </Pressable>
+  );
+
+  const testButton2 = (
+    <Pressable
+      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "green" : "green" }]}
+      onPress={() => saveToFile()}
+      accessibilityLabel="test"
+    >
+      <Text style={styles.buttonText}>save</Text>
+    </Pressable>
+  );
+
+  return (
+    <View style={styles.container}>
+      <StatusBar style="auto" backgroundColor="#ebebeb" translucent={false} />
+      <View style={styles.header}>
+        <Text style={styles.title}>{viewAbout ? "About" : "Tasks"}</Text>
+        <Pressable style={styles.aboutButton} onPress={() => setViewAbout(!viewAbout)} accessibilityLabel="About" />
+      </View>
+      {viewAbout ? <About /> : Tasks}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -204,11 +216,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
-  about: {
+  aboutButton: {
     marginRight: 20,
     padding: 20,
     backgroundColor: "#5865F2",
     borderRadius: 10,
+  },
+  tasks: {
+    flex: 1,
   },
   tasksList: {
     paddingHorizontal: 20,
