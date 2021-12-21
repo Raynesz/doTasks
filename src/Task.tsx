@@ -24,7 +24,7 @@ export const Task: FunctionComponent<Props> = (props) => {
 
   const text = props.item.focused ? (
     <TextInput
-      style={styles.taskInput}
+      style={styles.taskText}
       onChangeText={(changedText) => props.changeTextFunc(props.index, changedText)}
       onBlur={() => props.changeFocusFunc(props.index)}
       value={props.item.text}
@@ -82,10 +82,6 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   taskText: {
-    maxWidth: "77%",
-    fontSize: 16,
-  },
-  taskInput: {
     maxWidth: "77%",
     fontSize: 16,
   },

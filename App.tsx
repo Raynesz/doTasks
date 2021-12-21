@@ -154,7 +154,10 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tasks</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Tasks</Text>
+        <Pressable style={styles.about} accessibilityLabel="About" />
+      </View>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -188,18 +191,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#ebebeb",
     flex: 1,
   },
+  header: {
+    marginTop: 50,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   title: {
-    paddingTop: 50,
     paddingHorizontal: 20,
     fontSize: 28,
     fontWeight: "bold",
+  },
+  about: {
+    marginRight: 20,
+    padding: 20,
+    backgroundColor: "#5865F2",
+    borderRadius: 10,
   },
   tasksList: {
     paddingHorizontal: 20,
     marginTop: 10,
   },
   button: {
-    backgroundColor: "#ED4245",
     width: "90%",
     paddingVertical: 15,
     marginVertical: 25,
