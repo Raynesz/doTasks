@@ -1,5 +1,5 @@
 # doTasks
-A simple to-do application for mobile devices, made with React Native.
+A simple to-do list application for mobile devices, made with React Native.
 
 ![Showcase](./assets/showcase.jpg "The app")
 
