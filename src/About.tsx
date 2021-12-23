@@ -7,7 +7,7 @@ const About = () => {
       <Image style={styles.appIcon} source={require("../assets/icon.png")}></Image>
       <Text>
         <Text style={[styles.aboutText, { fontSize: 22 }]}>doTasks</Text>
-        <Text style={styles.aboutText}> - v1.0.0</Text>
+        <Text style={styles.aboutText}> - v1.0.1</Text>
       </Text>
       <Text style={{ marginTop: 30 }}>
         <Text style={styles.aboutText}>code by </Text>
