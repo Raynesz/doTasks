@@ -178,7 +178,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" backgroundColor="#ebebeb" translucent={false} />
+      <StatusBar style="dark" backgroundColor="#ebebeb" translucent={false} />
       <View style={styles.header}>
         <Text style={styles.title}>{viewAbout ? "About" : "Tasks"}</Text>
         <Pressable
