@@ -28,7 +28,6 @@
       "package": "com.raynesz.doTasks"
     },
     "androidNavigationBar": {
-      "visible": true,
       "barStyle": "dark-content",
       "backgroundColor": "#ebebeb"
     },
