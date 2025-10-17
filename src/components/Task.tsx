@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import { View, Text, StyleSheet, Pressable, TextInput } from "react-native";
-import { colors, TaskItem } from "./constants";
+import { colors, TaskItem } from "../constants";
 
 interface Props {
   item: TaskItem;

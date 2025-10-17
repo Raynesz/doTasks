@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import * as FileSystem from "expo-file-system";
-import { colors, TaskItem } from "./src/constants";
-import About from "./src/About";
-import Task from "./src/Task";
+import { File, Paths } from "expo-file-system";
+import { colors, TaskItem } from "./constants";
+import Task from "./components/Task";
 
 export default function App() {
-  const [viewAbout, setViewAbout] = useState<boolean>(false);
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
 
   const unfocus = (tasks: any): TaskItem[] => {
@@ -24,35 +22,48 @@ export default function App() {
     return newTasks;
   };
 
-  const saveToFile = async (): Promise<void> => {
+  async function saveTasks() {
     try {
-      await FileSystem.writeAsStringAsync(
-        FileSystem.documentDirectory + "tasks.json",
-        JSON.stringify({ tasks: taskItems })
-      );
-      //console.log("Saved to file.");
-    } catch (e: unknown) {
-      if (typeof e === "string") {
-        console.log(e.toUpperCase());
-      } else if (e instanceof Error) {
-        console.log(e.message);
-      }
+      // Create a File in the document directory (persistent storage)
+      const file = new File(Paths.document, "tasks.json");
+
+      // Write JSON data
+      await file.write(JSON.stringify({ tasks: taskItems }));
+
+      console.log("Tasks saved to:", file.uri);
+    } catch (error) {
+      console.error("Save failed:", error);
     }
-  };
+  }
 
   const loadFromFile = async (): Promise<void> => {
     try {
-      const contents: any = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "tasks.json");
-      //console.log("contents: " + contents);
-      if (contents) setTaskItems(unfocus(deselect(JSON.parse(contents).tasks)));
-      else console.log("Problem reading tasks.json");
+      const file = new File(Paths.document, "tasks.json");
+
+      // Check if the file exists
+      const info = await file.info();
+      if (info.exists) {
+        // Read as UTF-8 text
+        const contents = await file.text();
+        if (contents) {
+          const parsed = JSON.parse(contents);
+          setTaskItems(unfocus(deselect(parsed.tasks)));
+        } else {
+          console.log("tasks.json is empty, creating default file...");
+          await saveTasks();
+        }
+      } else {
+        console.log("tasks.json not found, creating new one...");
+        await saveTasks();
+      }
     } catch (e: unknown) {
       if (typeof e === "string") {
         console.log(e.toUpperCase());
       } else if (e instanceof Error) {
         console.log(e.message);
       }
-      saveToFile();
+      // Fallback: ensure a file exists
+      await saveTasks();
     }
   };
 
@@ -61,7 +72,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!focusedTaskExists()) saveToFile();
+    if (!focusedTaskExists()) saveTasks();
   }, [taskItems]);
 
   const handleAddTask = () => {
@@ -75,7 +86,7 @@ export default function App() {
         focused: true,
       },
     ]);
-    saveToFile();
+    saveTasks();
   };
 
   const handleSelectTask = (index: number): void => {
@@ -180,17 +191,9 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar style="dark" backgroundColor="#ebebeb" translucent={false} />
       <View style={styles.header}>
-        <Text style={styles.title}>{viewAbout ? "About" : "Tasks"}</Text>
-        <Pressable
-          style={styles.aboutButton}
-          onPress={() => {
-            setTaskItems(unfocus(deselect(taskItems)));
-            setViewAbout(!viewAbout);
-          }}
-          accessibilityLabel="About"
-        />
+        <Text style={styles.title}>Tasks</Text>
       </View>
-      {viewAbout ? <About /> : Tasks}
+      {Tasks}
     </View>
   );
 }
