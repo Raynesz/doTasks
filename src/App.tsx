@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
 import { colors, TaskItem } from "./constants";
 import Task from "./components/Task";
+import DistortedText from "./components/Distorted";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
@@ -145,6 +146,26 @@ export default function App() {
       </Pressable>
     ) : null;
 
+  const testButton = (
+    <Pressable
+      style={({ pressed }) => [
+        styles.button,
+        {
+          backgroundColor: "transparent",
+          borderWidth: 2, // add border
+          borderColor: "#5865F2", // choose a color that fits
+          borderRadius: 8, // optional: rounded corners
+        },
+      ]}
+      onPress={() => {}}
+      accessibilityLabel="Test"
+    >
+      <Text style={{ fontSize: 18, color: "#5865F2" }}>
+        &#169; 2025 <DistortedText text="Raynesz" fontSize={18} />
+      </Text>
+    </Pressable>
+  );
+
   const deleteButton = (
     <Pressable
       style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#E53437" : "#ED4245" }]}
@@ -194,6 +215,7 @@ export default function App() {
         <Text style={styles.title}>Tasks</Text>
       </View>
       {Tasks}
+      {testButton}
     </View>
   );
 }
