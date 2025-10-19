@@ -4,12 +4,11 @@ import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
 import { ThemeProvider, useTheme } from "./themes";
 import { colors, TaskItem } from "./constants";
-import Task from "./components/Task";
-import DistortedText from "./components/Distorted";
+import Task from "./Task";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
-  const [showAbout, setShowAbout] = useState<boolean>(false);
+  const [showAbout, setShowAbout] = useState<boolean>(true);
 
   const { theme } = useTheme();
 
@@ -167,7 +166,10 @@ export default function App() {
       accessibilityLabel="Test"
     >
       <Text selectable={false} style={{ fontSize: 18, color: theme.accent }}>
-        &#169; 2025 <DistortedText text="Raynesz" fontSize={18} />
+        est. 2025 by{" "}
+        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold", color: "#7e87ecff" }}>
+          raynesz
+        </Text>
       </Text>
     </Pressable>
   );
@@ -224,7 +226,13 @@ export default function App() {
     </View>
   );
 
-  const titleText = showAbout ? "doTasks - v2.0.0" : "Tasks";
+  const titleText = showAbout ? (
+    <Text>
+      doTasks - <Text style={{ color: theme.accent }}>v2.0.0</Text>
+    </Text>
+  ) : (
+    "Tasks"
+  );
 
   return (
     <ThemeProvider>

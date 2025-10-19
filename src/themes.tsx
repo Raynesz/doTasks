@@ -13,10 +13,10 @@ const lightTheme = {
 
 const darkTheme = {
   scheme: "dark",
-  background: "#292B2F",
+  background: "#282b30",
   text: "#EDEDED",
-  accent: "#5865F2",
-  accentPressed: "#5057E9",
+  accent: "#6670e2ff",
+  accentPressed: "#5a61e9ff",
   surface: "#40444B",
   dividers: "#2C2C2C",
 };
@@ -28,7 +28,7 @@ interface ThemeContextProps {
 }
 
 const ThemeContext = createContext<ThemeContextProps>({
-  theme: lightTheme,
+  theme: darkTheme,
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
