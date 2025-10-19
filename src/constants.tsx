@@ -4,5 +4,4 @@ export interface TaskItem {
   text: string;
   status: number;
   selected: boolean;
-  focused: boolean;
 }

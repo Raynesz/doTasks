@@ -28,7 +28,7 @@ interface ThemeContextProps {
 }
 
 const ThemeContext = createContext<ThemeContextProps>({
-  theme: darkTheme,
+  theme: lightTheme,
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {

@@ -5,73 +5,72 @@ import { colors, TaskItem } from "./constants";
 
 interface Props {
   item: TaskItem;
-  index: number;
-  selectFunc: (index: number) => void;
-  changeStatusFunc: (index: number) => void;
-  changeFocusFunc: (index: number) => void;
-  changeTextFunc: (index: number, changedText: string) => void;
+  isEditing: boolean;
+  onChangeStatus: () => void;
+  onChangeText: (text: string) => void;
+  onPressSelect: () => void;
+  onEndEditing: () => void;
+  selectMode: boolean;
+  onStartEditing: () => void;
 }
 
 const Task: FunctionComponent<Props> = (props) => {
   const { theme } = useTheme();
 
-  let circularBgColor: string;
-  let circularBorderWidth: number;
-  if (props.item.selected) {
-    circularBgColor = theme.accent;
-    circularBorderWidth = 0;
-  } else {
-    circularBgColor = theme.surface;
-    circularBorderWidth = 2;
-  }
-
-  const text = props.item.focused ? (
+  const text = props.isEditing ? (
     <TextInput
-      style={[styles.taskText, { color: theme.text }]}
+      style={[styles.text, { color: theme.text }]}
       onEndEditing={() => {
-        props.changeFocusFunc(props.index);
+        props.onEndEditing();
       }}
-      onChangeText={(changedText: string) => {
-        props.changeTextFunc(props.index, changedText);
+      onChangeText={(text: string) => {
+        props.onChangeText(text);
       }}
       defaultValue={props.item.text}
       maxLength={100}
       multiline
-      autoFocus
+      autoFocus={true}
     />
   ) : (
-    <Text style={[styles.taskText, { color: theme.text }]}>{props.item.text}</Text>
+    <Text style={[styles.text, { color: theme.text }]}>{props.item.text}</Text>
   );
 
   return (
-    <Pressable
+    <View
       style={[
         styles.task,
         { backgroundColor: theme.surface, borderColor: props.item.selected ? theme.accent : theme.surface },
       ]}
-      onPress={() => props.changeFocusFunc(props.index)}
     >
       <View style={styles.taskLeft}>
         <Pressable
           style={[styles.square, { backgroundColor: colors[props.item.status] }]}
-          onPress={() => props.changeStatusFunc(props.index)}
+          onPress={() => props.onChangeStatus()}
         />
-        {text}
       </View>
       <Pressable
-        style={[
-          styles.circular,
-          { backgroundColor: circularBgColor, borderWidth: circularBorderWidth, borderColor: theme.accent },
-        ]}
-        onPress={() => props.selectFunc(props.index)}
-      />
-    </Pressable>
+        style={[styles.textSection, { backgroundColor: theme.surface }]}
+        onPress={() => props.onStartEditing()}
+        disabled={props.isEditing}
+      >
+        {text}
+      </Pressable>
+      {props.selectMode && (
+        <Pressable
+          style={[
+            styles.circular,
+            { backgroundColor: props.item.selected ? theme.accent : theme.surface, borderColor: theme.accent },
+          ]}
+          onPress={() => props.onPressSelect()}
+        />
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   task: {
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     borderWidth: 2,
     flexDirection: "row",
@@ -90,14 +89,20 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 15,
   },
-  taskText: {
-    maxWidth: "77%",
+  textSection: {
+    width: "100%",
+    height: "100%",
+    flex: 1,
+  },
+  text: {
     fontSize: 16,
   },
   circular: {
     width: 25,
     height: 25,
     borderRadius: 13,
+    borderWidth: 2,
+    marginLeft: 5,
   },
 });
 

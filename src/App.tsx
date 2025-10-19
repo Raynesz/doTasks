@@ -8,16 +8,11 @@ import Task from "./Task";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
-  const [showAbout, setShowAbout] = useState<boolean>(true);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [selectMode, setSelectMode] = useState<boolean>(false);
+  const [showAbout, setShowAbout] = useState<boolean>(false);
 
   const { theme } = useTheme();
-
-  const unfocus = (tasks: any): TaskItem[] => {
-    const newTasks = tasks.map((item: object) => {
-      return { ...item, focused: false };
-    });
-    return newTasks;
-  };
 
   const deselect = (tasks: any): TaskItem[] => {
     const newTasks = tasks.map((item: object) => {
@@ -51,7 +46,7 @@ export default function App() {
         const contents = await file.text();
         if (contents) {
           const parsed = JSON.parse(contents);
-          setTaskItems(unfocus(deselect(parsed.tasks)));
+          setTaskItems(deselect(parsed.tasks));
         } else {
           console.log("tasks.json is empty, creating default file...");
           await saveTasks();
@@ -76,62 +71,56 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!focusedTaskExists()) saveTasks();
+    if (!editingIndex) saveTasks();
   }, [taskItems]);
 
   const handleAddTask = () => {
-    const newTasks = unfocus(taskItems);
     setTaskItems([
-      ...newTasks,
+      ...taskItems,
       {
         text: "",
         status: 0,
         selected: false,
-        focused: true,
       },
     ]);
+    setEditingIndex(taskItems.length);
     saveTasks();
   };
 
-  const handleSelectTask = (index: number): void => {
-    const newTasks = unfocus(taskItems);
+  const handleChangeText = (index: number, newText: string) => {
+    const newTasks = [...taskItems];
+    newTasks[index].text = newText;
+    setTaskItems(newTasks);
+  };
+
+  const handleChangeStatus = (index: number) => {
+    const newTasks = [...taskItems];
+    newTasks[index].status = (newTasks[index].status + 1) % colors.length;
+    setTaskItems(newTasks);
+  };
+
+  const handlePressSelect = (index: number) => {
+    const newTasks = [...taskItems];
     newTasks[index].selected = !newTasks[index].selected;
     setTaskItems(newTasks);
   };
 
-  const handleChangeText = (index: number, changedText: string): void => {
-    const newTasks = taskItems.slice();
-    newTasks[index].text = changedText;
-    setTaskItems(newTasks);
+  const handleStartEditing = (index: number) => {
+    setEditingIndex(index);
   };
 
-  const handleChangeStatus = (index: number): void => {
-    const newTasks = taskItems.slice();
-    if (newTasks[index].status < colors.length - 1) newTasks[index].status++;
-    else newTasks[index].status = 0;
-    setTaskItems(newTasks);
-  };
-
-  const handleChangeFocus = (index: number): void => {
-    const newTasks = taskItems.slice();
-    newTasks[index].focused = !newTasks[index].focused;
-    setTaskItems(newTasks);
+  const handleEndEditing = () => {
+    setEditingIndex(null);
   };
 
   const handleDeleteSelected = () => {
     setTaskItems(taskItems.filter((taskItem) => !taskItem.selected));
+    setSelectMode(false);
   };
 
   const selectedTasksExist = (): boolean => {
     for (let taskItem of taskItems) {
       if (taskItem.selected) return true;
-    }
-    return false;
-  };
-
-  const focusedTaskExists = (): boolean => {
-    for (let taskItem of taskItems) {
-      if (taskItem.focused) return true;
     }
     return false;
   };
@@ -157,16 +146,20 @@ export default function App() {
         styles.button,
         {
           backgroundColor: "transparent",
-          borderWidth: 2, // add border
-          borderColor: theme.accent, // choose a color that fits
-          borderRadius: 8, // optional: rounded corners
+          borderWidth: 2,
+          borderColor: theme.accent,
+          borderRadius: 8,
         },
       ]}
       onPress={() => setShowAbout(false)}
       accessibilityLabel="Test"
     >
       <Text selectable={false} style={{ fontSize: 18, color: theme.accent }}>
-        est. 2025 by{" "}
+        est.{" "}
+        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold", color: "#7e87ecff" }}>
+          2025
+        </Text>{" "}
+        by{" "}
         <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold", color: "#7e87ecff" }}>
           raynesz
         </Text>
@@ -191,14 +184,14 @@ export default function App() {
   let mainButton;
   if (showAbout) {
     mainButton = aboutButton;
-  } else if (selectedTasksExist()) {
+  } else if (selectMode) {
     mainButton = deleteButton;
   } else {
     mainButton = addTaskButton;
   }
 
   const Tasks = (
-    <View style={styles.tasks}>
+    <View style={styles.task}>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -207,20 +200,19 @@ export default function App() {
         onScrollBeginDrag={Keyboard.dismiss}
       >
         <View style={styles.tasksList}>
-          {taskItems
-            .slice(0)
-            .reverse()
-            .map((item, index) => (
-              <Task
-                key={index}
-                item={item}
-                index={taskItems.length - 1 - index}
-                selectFunc={handleSelectTask}
-                changeStatusFunc={handleChangeStatus}
-                changeFocusFunc={handleChangeFocus}
-                changeTextFunc={handleChangeText}
-              />
-            ))}
+          {taskItems.map((item, index) => (
+            <Task
+              key={index}
+              item={item}
+              isEditing={editingIndex === index}
+              onChangeText={(text) => handleChangeText(index, text)}
+              onChangeStatus={() => handleChangeStatus(index)}
+              onPressSelect={() => handlePressSelect(index)}
+              onEndEditing={handleEndEditing}
+              selectMode={selectMode}
+              onStartEditing={() => handleStartEditing(index)}
+            />
+          ))}
         </View>
       </ScrollView>
     </View>
@@ -238,15 +230,24 @@ export default function App() {
     <ThemeProvider>
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
-        <TouchableWithoutFeedback
-          style={styles.header}
-          onLongPress={() => setShowAbout(!showAbout)}
-          delayLongPress={3000}
-        >
-          <Text selectable={false} style={[styles.title, { color: theme.text }]}>
-            {titleText}
-          </Text>
-        </TouchableWithoutFeedback>
+        <View style={styles.header}>
+          <TouchableWithoutFeedback
+            style={styles.header}
+            onLongPress={() => setShowAbout(!showAbout)}
+            delayLongPress={2000}
+          >
+            <Text selectable={false} style={[styles.title, { color: theme.text }]}>
+              {titleText}
+            </Text>
+          </TouchableWithoutFeedback>
+          <Pressable
+            style={[
+              styles.circular,
+              { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.surface },
+            ]}
+            onPress={() => setSelectMode(!selectMode)}
+          ></Pressable>
+        </View>
         {Tasks}
         {mainButton}
       </View>
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
-  tasks: {
+  task: {
     flex: 1,
   },
   tasksList: {
@@ -288,5 +289,13 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 18,
     textTransform: "uppercase",
+  },
+  circular: {
+    width: 25,
+    height: 25,
+    borderRadius: 13,
+    borderWidth: 2,
+    marginTop: 10,
+    marginRight: 15,
   },
 });
