@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard } from "react-native";
+import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
+import { ThemeProvider, useTheme } from "./themes";
 import { colors, TaskItem } from "./constants";
 import Task from "./components/Task";
 import DistortedText from "./components/Distorted";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
+  const [showAbout, setShowAbout] = useState<boolean>(false);
+
+  const { theme } = useTheme();
 
   const unfocus = (tasks: any): TaskItem[] => {
     const newTasks = tasks.map((item: object) => {
@@ -136,31 +140,33 @@ export default function App() {
   const addTaskButton =
     taskItems.length <= 20 ? (
       <Pressable
-        style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#5057E9" : "#5865F2" }]}
+        style={({ pressed }) => [styles.button, { backgroundColor: pressed ? theme.accentPressed : theme.accent }]}
         onPress={() => {
           handleAddTask();
         }}
         accessibilityLabel="Add a new task"
       >
-        <Text style={styles.buttonText}>Add Task</Text>
+        <Text selectable={false} style={styles.buttonText}>
+          Add Task
+        </Text>
       </Pressable>
     ) : null;
 
-  const testButton = (
+  const aboutButton = (
     <Pressable
       style={({ pressed }) => [
         styles.button,
         {
           backgroundColor: "transparent",
           borderWidth: 2, // add border
-          borderColor: "#5865F2", // choose a color that fits
+          borderColor: theme.accent, // choose a color that fits
           borderRadius: 8, // optional: rounded corners
         },
       ]}
-      onPress={() => {}}
+      onPress={() => setShowAbout(false)}
       accessibilityLabel="Test"
     >
-      <Text style={{ fontSize: 18, color: "#5865F2" }}>
+      <Text selectable={false} style={{ fontSize: 18, color: theme.accent }}>
         &#169; 2025 <DistortedText text="Raynesz" fontSize={18} />
       </Text>
     </Pressable>
@@ -174,9 +180,20 @@ export default function App() {
       }}
       accessibilityLabel="Delete selected tasks"
     >
-      <Text style={styles.buttonText}>Delete</Text>
+      <Text selectable={false} style={styles.buttonText}>
+        Delete
+      </Text>
     </Pressable>
   );
+
+  let mainButton;
+  if (showAbout) {
+    mainButton = aboutButton;
+  } else if (selectedTasksExist()) {
+    mainButton = deleteButton;
+  } else {
+    mainButton = addTaskButton;
+  }
 
   const Tasks = (
     <View style={styles.tasks}>
@@ -204,25 +221,33 @@ export default function App() {
             ))}
         </View>
       </ScrollView>
-      {selectedTasksExist() ? deleteButton : addTaskButton}
     </View>
   );
 
+  const titleText = showAbout ? "doTasks - v2.0.0" : "Tasks";
+
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" backgroundColor="#ebebeb" translucent={false} />
-      <View style={styles.header}>
-        <Text style={styles.title}>Tasks</Text>
+    <ThemeProvider>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
+        <TouchableWithoutFeedback
+          style={styles.header}
+          onLongPress={() => setShowAbout(!showAbout)}
+          delayLongPress={3000}
+        >
+          <Text selectable={false} style={[styles.title, { color: theme.text }]}>
+            {titleText}
+          </Text>
+        </TouchableWithoutFeedback>
+        {Tasks}
+        {mainButton}
       </View>
-      {Tasks}
-      {testButton}
-    </View>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#ebebeb",
     flex: 1,
   },
   header: {
@@ -235,12 +260,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 28,
     fontWeight: "bold",
-  },
-  aboutButton: {
-    marginRight: 20,
-    padding: 20,
-    backgroundColor: "#5865F2",
-    borderRadius: 10,
   },
   tasks: {
     flex: 1,
