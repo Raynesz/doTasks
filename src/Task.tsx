@@ -42,12 +42,10 @@ const Task: FunctionComponent<Props> = (props) => {
         { backgroundColor: theme.surface, borderColor: props.item.selected ? theme.accent : theme.surface },
       ]}
     >
-      <View style={styles.taskLeft}>
-        <Pressable
-          style={[styles.square, { backgroundColor: colors[props.item.status] }]}
-          onPress={() => props.onChangeStatus()}
-        />
-      </View>
+      <Pressable
+        style={[styles.square, { backgroundColor: colors[props.item.status] }]}
+        onPress={() => props.onChangeStatus()}
+      />
       <Pressable
         style={[styles.textSection, { backgroundColor: theme.surface }]}
         onPress={() => props.onStartEditing()}
@@ -70,18 +68,13 @@ const Task: FunctionComponent<Props> = (props) => {
 
 const styles = StyleSheet.create({
   task: {
-    padding: 10,
+    padding: 12,
     borderRadius: 10,
     borderWidth: 2,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 10,
-  },
-  taskLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
   },
   square: {
     width: 30,

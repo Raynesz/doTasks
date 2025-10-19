@@ -1,7 +1,7 @@
 {
   "name": "dotasks",
   "version": "2.0.0",
-  "main": "index.ts",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",

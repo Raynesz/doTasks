@@ -32,8 +32,7 @@ const ThemeContext = createContext<ThemeContextProps>({
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const colorScheme = useColorScheme();
-  const theme: Theme = colorScheme === "dark" ? darkTheme : lightTheme;
+  const theme: Theme = useColorScheme() === "dark" ? darkTheme : lightTheme;
 
   return <ThemeContext.Provider value={{ theme }}>{children}</ThemeContext.Provider>;
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
-import { ThemeProvider, useTheme } from "./themes";
+import { useTheme } from "./themes";
 import { colors, TaskItem } from "./constants";
 import Task from "./Task";
 
@@ -28,8 +28,6 @@ export default function App() {
 
       // Write JSON data
       await file.write(JSON.stringify({ tasks: taskItems }));
-
-      console.log("Tasks saved to:", file.uri);
     } catch (error) {
       console.error("Save failed:", error);
     }
@@ -48,11 +46,9 @@ export default function App() {
           const parsed = JSON.parse(contents);
           setTaskItems(deselect(parsed.tasks));
         } else {
-          console.log("tasks.json is empty, creating default file...");
           await saveTasks();
         }
       } else {
-        console.log("tasks.json not found, creating new one...");
         await saveTasks();
       }
     } catch (e: unknown) {
@@ -118,17 +114,13 @@ export default function App() {
     setSelectMode(false);
   };
 
-  const selectedTasksExist = (): boolean => {
-    for (let taskItem of taskItems) {
-      if (taskItem.selected) return true;
-    }
-    return false;
-  };
-
   const addTaskButton =
     taskItems.length <= 20 ? (
       <Pressable
-        style={({ pressed }) => [styles.button, { backgroundColor: pressed ? theme.accentPressed : theme.accent }]}
+        style={({ pressed }) => [
+          styles.button,
+          { backgroundColor: pressed ? theme.accentPressed : theme.accent, borderColor: theme.accent },
+        ]}
         onPress={() => {
           handleAddTask();
         }}
@@ -146,9 +138,7 @@ export default function App() {
         styles.button,
         {
           backgroundColor: "transparent",
-          borderWidth: 2,
           borderColor: theme.accent,
-          borderRadius: 8,
         },
       ]}
       onPress={() => setShowAbout(false)}
@@ -156,11 +146,11 @@ export default function App() {
     >
       <Text selectable={false} style={{ fontSize: 18, color: theme.accent }}>
         est.{" "}
-        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold", color: "#7e87ecff" }}>
+        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold" }}>
           2025
         </Text>{" "}
         by{" "}
-        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold", color: "#7e87ecff" }}>
+        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold" }}>
           raynesz
         </Text>
       </Text>
@@ -169,7 +159,10 @@ export default function App() {
 
   const deleteButton = (
     <Pressable
-      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#E53437" : "#ED4245" }]}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: pressed ? "#E53437" : "#ED4245", borderColor: "#ED4245" },
+      ]}
       onPress={() => {
         handleDeleteSelected();
       }}
@@ -191,31 +184,25 @@ export default function App() {
   }
 
   const Tasks = (
-    <View style={styles.task}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-        }}
-        keyboardShouldPersistTaps="never"
-        onScrollBeginDrag={Keyboard.dismiss}
-      >
-        <View style={styles.tasksList}>
-          {taskItems.map((item, index) => (
-            <Task
-              key={index}
-              item={item}
-              isEditing={editingIndex === index}
-              onChangeText={(text) => handleChangeText(index, text)}
-              onChangeStatus={() => handleChangeStatus(index)}
-              onPressSelect={() => handlePressSelect(index)}
-              onEndEditing={handleEndEditing}
-              selectMode={selectMode}
-              onStartEditing={() => handleStartEditing(index)}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+    <ScrollView
+      contentContainerStyle={styles.tasksList}
+      keyboardShouldPersistTaps="never"
+      onScrollBeginDrag={Keyboard.dismiss}
+    >
+      {taskItems.map((item, index) => (
+        <Task
+          key={index}
+          item={item}
+          isEditing={editingIndex === index}
+          onChangeText={(text) => handleChangeText(index, text)}
+          onChangeStatus={() => handleChangeStatus(index)}
+          onPressSelect={() => handlePressSelect(index)}
+          onEndEditing={handleEndEditing}
+          selectMode={selectMode}
+          onStartEditing={() => handleStartEditing(index)}
+        />
+      ))}
+    </ScrollView>
   );
 
   const titleText = showAbout ? (
@@ -227,31 +214,29 @@ export default function App() {
   );
 
   return (
-    <ThemeProvider>
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
-        <View style={styles.header}>
-          <TouchableWithoutFeedback
-            style={styles.header}
-            onLongPress={() => setShowAbout(!showAbout)}
-            delayLongPress={2000}
-          >
-            <Text selectable={false} style={[styles.title, { color: theme.text }]}>
-              {titleText}
-            </Text>
-          </TouchableWithoutFeedback>
-          <Pressable
-            style={[
-              styles.circular,
-              { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.surface },
-            ]}
-            onPress={() => setSelectMode(!selectMode)}
-          ></Pressable>
-        </View>
-        {Tasks}
-        {mainButton}
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
+      <View style={styles.header}>
+        <TouchableWithoutFeedback
+          style={styles.header}
+          onLongPress={() => setShowAbout(!showAbout)}
+          delayLongPress={2000}
+        >
+          <Text selectable={false} style={[styles.title, { color: theme.text }]}>
+            {titleText}
+          </Text>
+        </TouchableWithoutFeedback>
+        <Pressable
+          style={[
+            styles.circular,
+            { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.background },
+          ]}
+          onPress={() => setSelectMode(!selectMode)}
+        ></Pressable>
       </View>
-    </ThemeProvider>
+      {Tasks}
+      {mainButton}
+    </View>
   );
 }
 
@@ -270,9 +255,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
-  task: {
-    flex: 1,
-  },
   tasksList: {
     paddingHorizontal: 20,
     marginTop: 10,
@@ -280,10 +262,11 @@ const styles = StyleSheet.create({
   button: {
     width: "90%",
     paddingVertical: 15,
-    marginVertical: 25,
+    marginVertical: 13,
     alignSelf: "center",
     alignItems: "center",
     borderRadius: 10,
+    borderWidth: 2,
   },
   buttonText: {
     color: "#FFF",
