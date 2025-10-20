@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, TouchableWitho
 import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
 import { useTheme } from "./themes";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, TaskItem } from "./constants";
 import Task from "./Task";
 
@@ -214,7 +215,10 @@ export default function App() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      edges={["top", "bottom", "left", "right"]}
+    >
       <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
       <View style={styles.header}>
         <TouchableWithoutFeedback
@@ -236,7 +240,7 @@ export default function App() {
       </View>
       {Tasks}
       {mainButton}
-    </View>
+    </SafeAreaView>
   );
 }
 

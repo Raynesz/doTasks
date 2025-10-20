@@ -1,12 +1,15 @@
 import { registerRootComponent } from "expo";
 import App from "./src/App";
 import { ThemeProvider } from "./src/themes";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function Root() {
   return (
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
