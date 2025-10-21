@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { StyleSheet, Text, View, Pressable, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
+import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useTheme } from "./themes";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, TaskItem } from "./constants";
@@ -24,10 +25,8 @@ export default function App() {
 
   async function saveTasks() {
     try {
-      // Create a File in the document directory (persistent storage)
       const file = new File(Paths.document, "tasks.json");
 
-      // Write JSON data
       await file.write(JSON.stringify({ tasks: taskItems }));
     } catch (error) {
       console.error("Save failed:", error);
@@ -38,10 +37,8 @@ export default function App() {
     try {
       const file = new File(Paths.document, "tasks.json");
 
-      // Check if the file exists
       const info = await file.info();
       if (info.exists) {
-        // Read as UTF-8 text
         const contents = await file.text();
         if (contents) {
           const parsed = JSON.parse(contents);
@@ -58,7 +55,6 @@ export default function App() {
       } else if (e instanceof Error) {
         console.log(e.message);
       }
-      // Fallback: ensure a file exists
       await saveTasks();
     }
   };
@@ -75,6 +71,7 @@ export default function App() {
     setTaskItems([
       ...taskItems,
       {
+        id: Date.now().toString(),
         text: "",
         status: 0,
         selected: false,
@@ -116,7 +113,7 @@ export default function App() {
   };
 
   const addTaskButton =
-    taskItems.length <= 20 ? (
+    taskItems.length <= 50 ? (
       <Pressable
         style={({ pressed }) => [
           styles.button,
@@ -143,7 +140,7 @@ export default function App() {
         },
       ]}
       onPress={() => setShowAbout(false)}
-      accessibilityLabel="Test"
+      accessibilityLabel="about"
     >
       <Text selectable={false} style={{ fontSize: 18, color: theme.accent }}>
         est.{" "}
@@ -184,27 +181,27 @@ export default function App() {
     mainButton = addTaskButton;
   }
 
-  const Tasks = (
-    <ScrollView
-      contentContainerStyle={styles.tasksList}
-      keyboardShouldPersistTaps="never"
-      onScrollBeginDrag={Keyboard.dismiss}
-    >
-      {taskItems.map((item, index) => (
-        <Task
-          key={index}
-          item={item}
-          isEditing={editingIndex === index}
-          onChangeText={(text) => handleChangeText(index, text)}
-          onChangeStatus={() => handleChangeStatus(index)}
-          onPressSelect={() => handlePressSelect(index)}
-          onEndEditing={handleEndEditing}
-          selectMode={selectMode}
-          onStartEditing={() => handleStartEditing(index)}
-        />
-      ))}
-    </ScrollView>
-  );
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<TaskItem>) => {
+    const index = taskItems.indexOf(item);
+    return (
+      <TouchableWithoutFeedback onLongPress={drag} delayLongPress={200}>
+        <View style={{ opacity: isActive ? 0.8 : 1 }}>
+          <Task
+            id={item.id}
+            item={item}
+            isEditing={editingIndex === index}
+            onChangeText={(text) => handleChangeText(index, text)}
+            onChangeStatus={() => handleChangeStatus(index)}
+            onPressSelect={() => handlePressSelect(index)}
+            onEndEditing={handleEndEditing}
+            selectMode={selectMode}
+            onStartEditing={() => handleStartEditing(index)}
+            onLongPress={drag}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  };
 
   const titleText = showAbout ? (
     <Text>
@@ -238,8 +235,19 @@ export default function App() {
           onPress={() => setSelectMode(!selectMode)}
         ></Pressable>
       </View>
-      {Tasks}
-      {mainButton}
+      <View style={{ flex: 1 }}>
+        <DraggableFlatList
+          data={taskItems}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          onDragEnd={({ data }) => setTaskItems(data)}
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={Keyboard.dismiss}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+          ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 20 }}>No tasks yet.</Text>}
+        />
+        {mainButton}
+      </View>
     </SafeAreaView>
   );
 }

@@ -4,6 +4,7 @@ import { useTheme } from "./themes";
 import { colors, TaskItem } from "./constants";
 
 interface Props {
+  id: string;
   item: TaskItem;
   isEditing: boolean;
   onChangeStatus: () => void;
@@ -12,6 +13,7 @@ interface Props {
   onEndEditing: () => void;
   selectMode: boolean;
   onStartEditing: () => void;
+  onLongPress: () => void;
 }
 
 const Task: FunctionComponent<Props> = (props) => {
@@ -36,7 +38,7 @@ const Task: FunctionComponent<Props> = (props) => {
   );
 
   return (
-    <View
+    <Pressable
       style={[
         styles.task,
         { backgroundColor: theme.surface, borderColor: props.item.selected ? theme.accent : theme.surface },
@@ -50,6 +52,7 @@ const Task: FunctionComponent<Props> = (props) => {
         style={[styles.textSection, { backgroundColor: theme.surface }]}
         onPress={() => props.onStartEditing()}
         disabled={props.isEditing}
+        onLongPress={() => props.onLongPress()}
       >
         {text}
       </Pressable>
@@ -62,7 +65,7 @@ const Task: FunctionComponent<Props> = (props) => {
           onPress={() => props.onPressSelect()}
         />
       )}
-    </View>
+    </Pressable>
   );
 };
 
