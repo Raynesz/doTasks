@@ -145,7 +145,7 @@ export default function App() {
         accessibilityLabel="Add a new task"
       >
         <Text selectable={false} style={styles.buttonText}>
-          Add Task
+          New Task
         </Text>
       </Pressable>
     ) : null;
@@ -234,7 +234,7 @@ export default function App() {
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
-      edges={["top", "bottom", "left", "right"]}
+      edges={["top", "bottom"]}
     >
       <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
       <View style={styles.header}>
@@ -254,7 +254,7 @@ export default function App() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0} // adjust if you have header
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <View style={{ flex: 1, backgroundColor: "yellow" }}>
           <DraggableFlatList
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   button: {
     width: "90%",
     paddingVertical: 15,
-    //marginVertical: 13,
+    marginVertical: 13,
     alignSelf: "center",
     alignItems: "center",
     borderRadius: 10,
