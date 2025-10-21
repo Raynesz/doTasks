@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Pressable, Keyboard, TouchableWithoutFeedback } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
@@ -9,7 +18,18 @@ import { colors, TaskItem } from "./constants";
 import Task from "./Task";
 
 export default function App() {
-  const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
+  const [taskItems, setTaskItems] = useState<TaskItem[]>([
+    { id: "1", text: "Buy groceries", status: 0, selected: false },
+    { id: "2", text: "Walk the dog", status: 1, selected: false },
+    { id: "3", text: "Finish React Native project", status: 2, selected: false },
+    { id: "4", text: "Call mom", status: 0, selected: false },
+    { id: "5", text: "Read a book", status: 1, selected: false },
+    { id: "6", text: "Clean the kitchen", status: 2, selected: false },
+    { id: "7", text: "Workout", status: 0, selected: false },
+    { id: "8", text: "Pay bills", status: 1, selected: false },
+    { id: "9", text: "Plan weekend trip", status: 2, selected: false },
+    { id: "10", text: "Meditate", status: 0, selected: false },
+  ]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [selectMode, setSelectMode] = useState<boolean>(false);
   const [showAbout, setShowAbout] = useState<boolean>(false);
@@ -218,11 +238,7 @@ export default function App() {
     >
       <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
       <View style={styles.header}>
-        <TouchableWithoutFeedback
-          style={styles.header}
-          onLongPress={() => setShowAbout(!showAbout)}
-          delayLongPress={2000}
-        >
+        <TouchableWithoutFeedback onLongPress={() => setShowAbout(!showAbout)} delayLongPress={2000}>
           <Text selectable={false} style={[styles.title, { color: theme.text }]}>
             {titleText}
           </Text>
@@ -233,21 +249,27 @@ export default function App() {
             { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.background },
           ]}
           onPress={() => setSelectMode(!selectMode)}
-        ></Pressable>
-      </View>
-      <View style={{ flex: 1 }}>
-        <DraggableFlatList
-          data={taskItems}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          onDragEnd={({ data }) => setTaskItems(data)}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={Keyboard.dismiss}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-          ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 20 }}>No tasks yet.</Text>}
         />
-        {mainButton}
       </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0} // adjust if you have header
+      >
+        <View style={{ flex: 1, backgroundColor: "yellow" }}>
+          <DraggableFlatList
+            data={taskItems}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            onDragEnd={({ data }) => setTaskItems(data)}
+            keyboardShouldPersistTaps="handled"
+            onScrollBeginDrag={Keyboard.dismiss}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+            ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 20 }}>No tasks yet.</Text>}
+          />
+        </View>
+        <View style={{ backgroundColor: "red" }}>{mainButton}</View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -255,12 +277,15 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    borderWidth: 3,
+    borderColor: "cyan",
   },
   header: {
     paddingVertical: 10,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    backgroundColor: "green",
   },
   title: {
     paddingHorizontal: 20,
@@ -269,12 +294,11 @@ const styles = StyleSheet.create({
   },
   tasksList: {
     paddingHorizontal: 20,
-    marginTop: 10,
   },
   button: {
     width: "90%",
     paddingVertical: 15,
-    marginVertical: 13,
+    //marginVertical: 13,
     alignSelf: "center",
     alignItems: "center",
     borderRadius: 10,
