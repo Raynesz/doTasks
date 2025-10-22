@@ -1,22 +1,9 @@
 import React, { FunctionComponent } from "react";
 import { Text, StyleSheet, Pressable, TextInput } from "react-native";
 import { useTheme } from "./themes";
-import { colors, TaskItem, maxTaskCharaters } from "./constants";
+import { colors, TaskProps, maxTaskCharaters } from "./constants";
 
-interface Props {
-  id: string;
-  item: TaskItem;
-  isEditing: boolean;
-  onChangeStatus: () => void;
-  onChangeText: (text: string) => void;
-  onPressSelect: () => void;
-  onEndEditing: () => void;
-  selectMode: boolean;
-  onStartEditing: () => void;
-  onLongPress: () => void;
-}
-
-const Task: FunctionComponent<Props> = (props) => {
+const Task: FunctionComponent<TaskProps> = (props) => {
   const { theme } = useTheme();
 
   const text = props.isEditing ? (
@@ -41,7 +28,7 @@ const Task: FunctionComponent<Props> = (props) => {
     <Pressable
       style={[
         styles.task,
-        { backgroundColor: theme.surface, borderColor: props.item.selected ? theme.accent : theme.surface },
+        { backgroundColor: theme.surface, borderColor: props.selected ? theme.accent : theme.surface },
       ]}
     >
       <Pressable
@@ -60,7 +47,7 @@ const Task: FunctionComponent<Props> = (props) => {
         <Pressable
           style={[
             styles.circular,
-            { backgroundColor: props.item.selected ? theme.accent : theme.surface, borderColor: theme.accent },
+            { backgroundColor: props.selected ? theme.accent : theme.surface, borderColor: theme.accent },
           ]}
           onPress={() => props.onPressSelect()}
         />

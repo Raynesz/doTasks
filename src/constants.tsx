@@ -4,7 +4,20 @@ export interface TaskItem {
   id: string;
   text: string;
   status: number;
+}
+
+export interface TaskProps {
+  id: string;
+  item: TaskItem;
   selected: boolean;
+  isEditing: boolean;
+  onChangeStatus: () => void;
+  onChangeText: (text: string) => void;
+  onPressSelect: () => void;
+  onEndEditing: () => void;
+  selectMode: boolean;
+  onStartEditing: () => void;
+  onLongPress: () => void;
 }
 
 export const maxTasks = 50;

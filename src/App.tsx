@@ -18,24 +18,18 @@ import Task from "./Task";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([
-    { id: "1", text: "Buy groceries", status: 0, selected: false },
-    { id: "2", text: "Walk the dog", status: 1, selected: false },
+    { id: "1", text: "Buy groceries", status: 0 },
+    { id: "2", text: "Walk the dog", status: 1 },
   ]);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [selectMode, setSelectMode] = useState<boolean>(false);
   const [showAbout, setShowAbout] = useState<boolean>(false);
 
   const { theme } = useTheme();
 
-  const deselect = (tasks: any): TaskItem[] => {
-    const newTasks = tasks.map((item: object) => {
-      return { ...item, selected: false };
-    });
-    return newTasks;
-  };
-
   async function saveTasks() {
-    console.log("Saving tasks...");
+    console.log("Saving tasks..." + editingIndex);
     try {
       const file = new File(Paths.document, "tasks.json");
 
@@ -46,6 +40,7 @@ export default function App() {
   }
 
   const loadFromFile = async (): Promise<void> => {
+    console.log("Loading tasks...");
     try {
       const file = new File(Paths.document, "tasks.json");
 
@@ -54,7 +49,7 @@ export default function App() {
         const contents = await file.text();
         if (contents) {
           const parsed = JSON.parse(contents);
-          setTaskItems(deselect(parsed.tasks));
+          setTaskItems(parsed.tasks);
         } else {
           await saveTasks();
         }
@@ -76,7 +71,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!editingIndex) saveTasks();
+    if (editingIndex === null) saveTasks();
   }, [taskItems]);
 
   const handleAddTask = () => {
@@ -86,7 +81,6 @@ export default function App() {
         id: Date.now().toString(),
         text: "",
         status: 0,
-        selected: false,
       },
     ]);
     setEditingIndex(taskItems.length);
@@ -105,10 +99,14 @@ export default function App() {
     setTaskItems(newTasks);
   };
 
-  const handlePressSelect = (index: number) => {
-    const newTasks = [...taskItems];
-    newTasks[index].selected = !newTasks[index].selected;
-    setTaskItems(newTasks);
+  const handlePressSelect = (id: string) => {
+    setSelectedTasks((prevSelected) => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter((itemId) => itemId !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
   };
 
   const handleStartEditing = (index: number) => {
@@ -117,10 +115,12 @@ export default function App() {
 
   const handleEndEditing = () => {
     setEditingIndex(null);
+    saveTasks();
   };
 
   const handleDeleteSelected = () => {
-    setTaskItems(taskItems.filter((taskItem) => !taskItem.selected));
+    setTaskItems((prevTasks) => prevTasks.filter((taskItem) => !selectedTasks.includes(taskItem.id)));
+    setSelectedTasks([]);
     setSelectMode(false);
   };
 
@@ -196,10 +196,11 @@ export default function App() {
           <Task
             id={item.id}
             item={item}
+            selected={selectedTasks.includes(item.id)}
             isEditing={editingIndex === index}
             onChangeText={(text) => handleChangeText(index, text)}
             onChangeStatus={() => handleChangeStatus(index)}
-            onPressSelect={() => handlePressSelect(index)}
+            onPressSelect={() => handlePressSelect(item.id)}
             onEndEditing={handleEndEditing}
             selectMode={selectMode}
             onStartEditing={() => handleStartEditing(index)}
@@ -232,7 +233,7 @@ export default function App() {
             { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.backgroundPrimary },
           ]}
           onPress={() => {
-            setTaskItems(deselect(taskItems));
+            setSelectedTasks([]);
             setSelectMode(!selectMode);
           }}
         />
