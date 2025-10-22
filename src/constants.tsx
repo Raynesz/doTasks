@@ -1,4 +1,4 @@
-export const colors: string[] = ["#5865F2", "#ED4245", "#FEE75C", "#57F287"];
+export const colors: string[] = ["#93acfdff", "#ff6a6aff", "#ffe555ff", "#a7ff6dff"];
 
 export interface TaskItem {
   id: string;
@@ -6,3 +6,7 @@ export interface TaskItem {
   status: number;
   selected: boolean;
 }
+
+export const maxTasks = 50;
+
+export const maxTaskCharaters = 100;

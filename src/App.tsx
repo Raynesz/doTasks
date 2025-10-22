@@ -9,26 +9,17 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { File, Paths } from "expo-file-system";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useTheme } from "./themes";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, TaskItem } from "./constants";
+import { colors, TaskItem, maxTasks } from "./constants";
 import Task from "./Task";
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([
     { id: "1", text: "Buy groceries", status: 0, selected: false },
     { id: "2", text: "Walk the dog", status: 1, selected: false },
-    { id: "3", text: "Finish React Native project", status: 2, selected: false },
-    { id: "4", text: "Call mom", status: 0, selected: false },
-    { id: "5", text: "Read a book", status: 1, selected: false },
-    { id: "6", text: "Clean the kitchen", status: 2, selected: false },
-    { id: "7", text: "Workout", status: 0, selected: false },
-    { id: "8", text: "Pay bills", status: 1, selected: false },
-    { id: "9", text: "Plan weekend trip", status: 2, selected: false },
-    { id: "10", text: "Meditate", status: 0, selected: false },
   ]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [selectMode, setSelectMode] = useState<boolean>(false);
@@ -44,6 +35,7 @@ export default function App() {
   };
 
   async function saveTasks() {
+    console.log("Saving tasks...");
     try {
       const file = new File(Paths.document, "tasks.json");
 
@@ -133,12 +125,9 @@ export default function App() {
   };
 
   const addTaskButton =
-    taskItems.length <= 50 ? (
+    taskItems.length < maxTasks ? (
       <Pressable
-        style={({ pressed }) => [
-          styles.button,
-          { backgroundColor: pressed ? theme.accentPressed : theme.accent, borderColor: theme.accent },
-        ]}
+        style={({ pressed }) => [styles.button, { backgroundColor: pressed ? theme.accentPressed : theme.accent }]}
         onPress={() => {
           handleAddTask();
         }}
@@ -156,6 +145,7 @@ export default function App() {
         styles.button,
         {
           backgroundColor: "transparent",
+          borderWidth: 2,
           borderColor: theme.accent,
         },
       ]}
@@ -177,10 +167,7 @@ export default function App() {
 
   const deleteButton = (
     <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: pressed ? "#E53437" : "#ED4245", borderColor: "#ED4245" },
-      ]}
+      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#E53437" : "#ED4245" }]}
       onPress={() => {
         handleDeleteSelected();
       }}
@@ -232,11 +219,7 @@ export default function App() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-      edges={["top", "bottom"]}
-    >
-      <StatusBar style="auto" backgroundColor={theme.background} translucent={false} />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]} edges={["top", "bottom"]}>
       <View style={styles.header}>
         <TouchableWithoutFeedback onLongPress={() => setShowAbout(!showAbout)} delayLongPress={2000}>
           <Text selectable={false} style={[styles.title, { color: theme.text }]}>
@@ -246,9 +229,12 @@ export default function App() {
         <Pressable
           style={[
             styles.circular,
-            { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.background },
+            { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.backgroundPrimary },
           ]}
-          onPress={() => setSelectMode(!selectMode)}
+          onPress={() => {
+            setTaskItems(deselect(taskItems));
+            setSelectMode(!selectMode);
+          }}
         />
       </View>
       <KeyboardAvoidingView
@@ -256,7 +242,7 @@ export default function App() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <View style={{ flex: 1, backgroundColor: "yellow" }}>
+        <View style={{ flex: 1 }}>
           <DraggableFlatList
             data={taskItems}
             keyExtractor={(item) => item.id}
@@ -264,11 +250,10 @@ export default function App() {
             onDragEnd={({ data }) => setTaskItems(data)}
             keyboardShouldPersistTaps="handled"
             onScrollBeginDrag={Keyboard.dismiss}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
-            ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 20 }}>No tasks yet.</Text>}
+            contentContainerStyle={{ backgroundColor: theme.backgroundSecondary, paddingHorizontal: 20 }}
           />
         </View>
-        <View style={{ backgroundColor: "red" }}>{mainButton}</View>
+        <View style={{ backgroundColor: theme.backgroundPrimary }}>{mainButton}</View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -277,23 +262,17 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    borderWidth: 3,
-    borderColor: "cyan",
   },
   header: {
     paddingVertical: 10,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "green",
   },
   title: {
     paddingHorizontal: 20,
     fontSize: 28,
     fontWeight: "bold",
-  },
-  tasksList: {
-    paddingHorizontal: 20,
   },
   button: {
     width: "90%",
@@ -302,7 +281,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     alignItems: "center",
     borderRadius: 10,
-    borderWidth: 2,
   },
   buttonText: {
     color: "#FFF",
@@ -314,7 +292,7 @@ const styles = StyleSheet.create({
     height: 25,
     borderRadius: 13,
     borderWidth: 2,
-    marginTop: 10,
-    marginRight: 15,
+    marginTop: 7,
+    marginRight: 23,
   },
 });

@@ -3,22 +3,22 @@ import { useColorScheme } from "react-native";
 
 const lightTheme = {
   scheme: "light",
-  background: "#EBEBEB",
+  backgroundPrimary: "#EBEBEB",
+  backgroundSecondary: "#dbdbdbff",
   text: "#111111",
   accent: "#5865F2",
   accentPressed: "#5057E9",
   surface: "#FAFAFA",
-  dividers: "#2C2C2C",
 };
 
 const darkTheme = {
   scheme: "dark",
-  background: "#282b30",
+  backgroundPrimary: "#282b30",
+  backgroundSecondary: "#525963ff",
   text: "#EDEDED",
   accent: "#6670e2ff",
   accentPressed: "#5a61e9ff",
-  surface: "#40444B",
-  dividers: "#2C2C2C",
+  surface: "#33363bff",
 };
 
 type Theme = typeof lightTheme;

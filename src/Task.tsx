@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
-import { View, Text, StyleSheet, Pressable, TextInput } from "react-native";
+import { Text, StyleSheet, Pressable, TextInput } from "react-native";
 import { useTheme } from "./themes";
-import { colors, TaskItem } from "./constants";
+import { colors, TaskItem, maxTaskCharaters } from "./constants";
 
 interface Props {
   id: string;
@@ -29,9 +29,9 @@ const Task: FunctionComponent<Props> = (props) => {
         props.onChangeText(text);
       }}
       defaultValue={props.item.text}
-      maxLength={100}
+      maxLength={maxTaskCharaters}
       multiline
-      autoFocus={true}
+      autoFocus
     />
   ) : (
     <Text style={[styles.text, { color: theme.text }]}>{props.item.text}</Text>
