@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import { File, Paths } from "expo-file-system";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useTheme } from "./themes";
@@ -67,12 +69,12 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setStyle("auto");
+    }
+
     loadFromFile();
   }, []);
-
-  useEffect(() => {
-    if (editingIndex === null) saveTasks();
-  }, [taskItems]);
 
   const handleAddTask = () => {
     setTaskItems([
@@ -97,6 +99,7 @@ export default function App() {
     const newTasks = [...taskItems];
     newTasks[index].status = (newTasks[index].status + 1) % colors.length;
     setTaskItems(newTasks);
+    saveTasks();
   };
 
   const handlePressSelect = (id: string) => {
@@ -110,6 +113,7 @@ export default function App() {
   };
 
   const handleStartEditing = (index: number) => {
+    if (selectMode) return;
     setEditingIndex(index);
   };
 
@@ -122,6 +126,7 @@ export default function App() {
     setTaskItems((prevTasks) => prevTasks.filter((taskItem) => !selectedTasks.includes(taskItem.id)));
     setSelectedTasks([]);
     setSelectMode(false);
+    saveTasks();
   };
 
   const addTaskButton =
@@ -179,6 +184,21 @@ export default function App() {
     </Pressable>
   );
 
+  const doneButton = editingIndex !== null && (
+    <Pressable
+      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#5eac1eff" : "#6bc522ff" }]}
+      onPress={() => {
+        setEditingIndex(null);
+        saveTasks();
+      }}
+      accessibilityLabel="Done editing task"
+    >
+      <Text selectable={false} style={styles.buttonText}>
+        Done
+      </Text>
+    </Pressable>
+  );
+
   let mainButton;
   if (showAbout) {
     mainButton = aboutButton;
@@ -221,6 +241,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]} edges={["top", "bottom"]}>
+      <StatusBar style="auto" backgroundColor={theme.backgroundPrimary} translucent={false} />
       <View style={styles.header}>
         <TouchableWithoutFeedback onLongPress={() => setShowAbout(!showAbout)} delayLongPress={2000}>
           <Text selectable={false} style={[styles.title, { color: theme.text }]}>
@@ -235,6 +256,7 @@ export default function App() {
           onPress={() => {
             setSelectedTasks([]);
             setSelectMode(!selectMode);
+            setEditingIndex(null);
           }}
         />
       </View>
@@ -248,13 +270,25 @@ export default function App() {
             data={taskItems}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            onDragEnd={({ data }) => setTaskItems(data)}
+            onDragEnd={({ data }) => {
+              setTaskItems(data);
+              saveTasks();
+            }}
             keyboardShouldPersistTaps="handled"
             onScrollBeginDrag={Keyboard.dismiss}
             contentContainerStyle={{ backgroundColor: theme.backgroundSecondary, paddingHorizontal: 20 }}
           />
         </View>
-        <View style={{ backgroundColor: theme.backgroundPrimary }}>{mainButton}</View>
+        <View style={[styles.footer, { backgroundColor: theme.backgroundPrimary }]}>
+          {editingIndex === null || showAbout ? (
+            <View style={styles.singleButtonWrapper}>{mainButton}</View>
+          ) : (
+            <View style={styles.doubleButtonWrapper}>
+              <View style={styles.halfButton}>{mainButton}</View>
+              <View style={styles.halfButton}>{doneButton}</View>
+            </View>
+          )}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -269,6 +303,12 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
   },
   title: {
     paddingHorizontal: 20,
@@ -295,5 +335,21 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     marginTop: 7,
     marginRight: 23,
+  },
+  singleButtonWrapper: {
+    width: "90%",
+    alignSelf: "center",
+  },
+
+  doubleButtonWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    alignSelf: "center",
+  },
+
+  halfButton: {
+    flex: 1,
+    marginHorizontal: 5,
   },
 });
