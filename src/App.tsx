@@ -171,7 +171,6 @@ export default function App() {
         styles.button,
         {
           backgroundColor: "transparent",
-          borderWidth: 2,
           borderColor: theme.accent,
         },
       ]}
@@ -322,12 +321,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 20,
   },
   title: {
     paddingHorizontal: 20,
@@ -337,10 +337,11 @@ const styles = StyleSheet.create({
   button: {
     width: "90%",
     paddingVertical: 15,
-    marginVertical: 13,
     alignSelf: "center",
     alignItems: "center",
     borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "transparent",
   },
   buttonText: {
     color: "#FFF",
@@ -352,7 +353,6 @@ const styles = StyleSheet.create({
     height: 25,
     borderRadius: 13,
     borderWidth: 2,
-    marginTop: 7,
     marginRight: 23,
   },
   singleButtonWrapper: {
