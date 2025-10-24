@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
+  AppState,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
@@ -81,11 +82,19 @@ export default function App() {
   };
 
   useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "background") {
+        saveTasks.flush();
+      }
+    });
+
     if (Platform.OS === "android") {
       NavigationBar.setStyle("auto");
     }
 
     loadFromFile();
+
+    return () => sub.remove();
   }, []);
 
   useEffect(() => {
