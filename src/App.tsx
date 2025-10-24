@@ -15,8 +15,20 @@ import { File, Paths } from "expo-file-system";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useTheme } from "./themes";
 import { SafeAreaView } from "react-native-safe-area-context";
+import debounce from "lodash.debounce";
 import { colors, TaskItem, maxTasks } from "./constants";
 import Task from "./Task";
+
+const saveTasks = debounce(async (tasks: TaskItem[]) => {
+  console.log("Start save " + Date.now().toString());
+  try {
+    const file = new File(Paths.document, "tasks.json");
+
+    await file.write(JSON.stringify({ tasks }));
+  } catch (error) {
+    console.error("Save failed:", error);
+  }
+}, 1000);
 
 export default function App() {
   const [taskItems, setTaskItems] = useState<TaskItem[]>([
@@ -30,41 +42,41 @@ export default function App() {
 
   const { theme } = useTheme();
 
-  async function saveTasks() {
-    console.log("Saving tasks..." + editingIndex);
-    try {
-      const file = new File(Paths.document, "tasks.json");
-
-      await file.write(JSON.stringify({ tasks: taskItems }));
-    } catch (error) {
-      console.error("Save failed:", error);
-    }
-  }
-
   const loadFromFile = async (): Promise<void> => {
     console.log("Loading tasks...");
-    try {
-      const file = new File(Paths.document, "tasks.json");
+    const file = new File(Paths.document, "tasks.json");
 
+    try {
       const info = await file.info();
-      if (info.exists) {
-        const contents = await file.text();
-        if (contents) {
-          const parsed = JSON.parse(contents);
-          setTaskItems(parsed.tasks);
-        } else {
-          await saveTasks();
-        }
+
+      // If file doesn’t exist, create it with defaults
+      if (!info.exists) {
+        console.warn("No tasks file found — creating new one.");
+        await saveTasks(taskItems);
+        return;
+      }
+
+      const contents = await file.text();
+
+      if (!contents.trim()) {
+        console.warn("Tasks file is empty — writing defaults.");
+        await saveTasks(taskItems);
+        return;
+      }
+
+      const parsed = JSON.parse(contents);
+
+      if (Array.isArray(parsed.tasks)) {
+        setTaskItems(parsed.tasks);
+        console.log("Tasks loaded successfully");
       } else {
-        await saveTasks();
+        console.warn("Invalid tasks format — resetting file.");
+        await saveTasks(taskItems);
       }
-    } catch (e: unknown) {
-      if (typeof e === "string") {
-        console.log(e.toUpperCase());
-      } else if (e instanceof Error) {
-        console.log(e.message);
-      }
-      await saveTasks();
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+      // As fallback, rewrite defaults to prevent app crash
+      await saveTasks(taskItems);
     }
   };
 
@@ -76,6 +88,10 @@ export default function App() {
     loadFromFile();
   }, []);
 
+  useEffect(() => {
+    saveTasks(taskItems);
+  }, [taskItems]);
+
   const handleAddTask = () => {
     setTaskItems([
       ...taskItems,
@@ -86,7 +102,6 @@ export default function App() {
       },
     ]);
     setEditingIndex(taskItems.length);
-    saveTasks();
   };
 
   const handleChangeText = (index: number, newText: string) => {
@@ -99,7 +114,6 @@ export default function App() {
     const newTasks = [...taskItems];
     newTasks[index].status = (newTasks[index].status + 1) % colors.length;
     setTaskItems(newTasks);
-    saveTasks();
   };
 
   const handlePressSelect = (id: string) => {
@@ -119,14 +133,12 @@ export default function App() {
 
   const handleEndEditing = () => {
     setEditingIndex(null);
-    saveTasks();
   };
 
   const handleDeleteSelected = () => {
     setTaskItems((prevTasks) => prevTasks.filter((taskItem) => !selectedTasks.includes(taskItem.id)));
     setSelectedTasks([]);
     setSelectMode(false);
-    saveTasks();
   };
 
   const addTaskButton =
@@ -189,7 +201,6 @@ export default function App() {
       style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#5eac1eff" : "#6bc522ff" }]}
       onPress={() => {
         setEditingIndex(null);
-        saveTasks();
       }}
       accessibilityLabel="Done editing task"
     >
@@ -272,7 +283,6 @@ export default function App() {
             renderItem={renderItem}
             onDragEnd={({ data }) => {
               setTaskItems(data);
-              saveTasks();
             }}
             keyboardShouldPersistTaps="handled"
             onScrollBeginDrag={Keyboard.dismiss}
