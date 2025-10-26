@@ -15,13 +15,13 @@ import * as NavigationBar from "expo-navigation-bar";
 import { File, Paths } from "expo-file-system";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useTheme } from "./themes";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import debounce from "lodash.debounce";
 import { colors, TaskItem, maxTasks } from "./constants";
 import Task from "./Task";
 
 const saveTasks = debounce(async (tasks: TaskItem[]) => {
-  console.log("Start save " + Date.now().toString());
+  //console.log("Start save " + Date.now().toString()); //LOG
   try {
     const file = new File(Paths.document, "tasks.json");
 
@@ -41,10 +41,12 @@ export default function App() {
   const [selectMode, setSelectMode] = useState<boolean>(false);
   const [showAbout, setShowAbout] = useState<boolean>(false);
 
+  const insets = useSafeAreaInsets();
+
   const { theme } = useTheme();
 
   const loadFromFile = async (): Promise<void> => {
-    console.log("Loading tasks...");
+    //console.log("Loading tasks..."); //LOG
     const file = new File(Paths.document, "tasks.json");
 
     try {
@@ -69,7 +71,7 @@ export default function App() {
 
       if (Array.isArray(parsed.tasks)) {
         setTaskItems(parsed.tasks);
-        console.log("Tasks loaded successfully");
+        //console.log("Tasks loaded successfully"); //LOG
       } else {
         console.warn("Invalid tasks format — resetting file.");
         await saveTasks(taskItems);
@@ -82,10 +84,15 @@ export default function App() {
   };
 
   useEffect(() => {
-    const sub = AppState.addEventListener("change", (state) => {
+    const appStateListener = AppState.addEventListener("change", (state) => {
       if (state === "background") {
         saveTasks.flush();
       }
+    });
+
+    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
+      //console.log("Keyboard closed"); //LOG
+      setEditingIndex(null);
     });
 
     if (Platform.OS === "android") {
@@ -94,7 +101,10 @@ export default function App() {
 
     loadFromFile();
 
-    return () => sub.remove();
+    return () => {
+      appStateListener.remove();
+      hideListener.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -183,7 +193,7 @@ export default function App() {
           2025
         </Text>{" "}
         by{" "}
-        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold" }}>
+        <Text selectable={false} style={{ fontSize: 18, fontWeight: "bold", color: "#c22c4c" }}>
           raynesz
         </Text>
       </Text>
@@ -200,20 +210,6 @@ export default function App() {
     >
       <Text selectable={false} style={styles.buttonText}>
         Delete
-      </Text>
-    </Pressable>
-  );
-
-  const doneButton = editingIndex !== null && (
-    <Pressable
-      style={({ pressed }) => [styles.button, { backgroundColor: pressed ? "#5eac1eff" : "#6bc522ff" }]}
-      onPress={() => {
-        setEditingIndex(null);
-      }}
-      accessibilityLabel="Done editing task"
-    >
-      <Text selectable={false} style={styles.buttonText}>
-        Done
       </Text>
     </Pressable>
   );
@@ -258,32 +254,47 @@ export default function App() {
     "Tasks"
   );
 
+  const footer =
+    editingIndex === null ? (
+      <View style={[styles.footer, { backgroundColor: theme.backgroundPrimary }]}>{mainButton}</View>
+    ) : null;
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]} edges={["top", "bottom"]}>
-      <StatusBar style="auto" backgroundColor={theme.backgroundPrimary} translucent={false} />
-      <View style={styles.header}>
-        <TouchableWithoutFeedback onLongPress={() => setShowAbout(!showAbout)} delayLongPress={2000}>
-          <Text selectable={false} style={[styles.title, { color: theme.text }]}>
-            {titleText}
-          </Text>
-        </TouchableWithoutFeedback>
-        <Pressable
-          style={[
-            styles.circular,
-            { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.backgroundPrimary },
-          ]}
-          onPress={() => {
-            setSelectedTasks([]);
-            setSelectMode(!selectMode);
-            setEditingIndex(null);
-          }}
-        />
-      </View>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.backgroundPrimary,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
+        <View style={styles.header}>
+          <TouchableWithoutFeedback onLongPress={() => setShowAbout(!showAbout)} delayLongPress={2000}>
+            <Text selectable={false} style={[styles.title, { color: theme.text }]}>
+              {titleText}
+            </Text>
+          </TouchableWithoutFeedback>
+          <Pressable
+            style={[
+              styles.circular,
+              { borderColor: theme.accent, backgroundColor: selectMode ? theme.accent : theme.backgroundPrimary },
+            ]}
+            onPress={() => {
+              setSelectedTasks([]);
+              setSelectMode(!selectMode);
+              setEditingIndex(null);
+            }}
+          />
+        </View>
         <View style={{ flex: 1 }}>
           <DraggableFlatList
             data={taskItems}
@@ -297,18 +308,9 @@ export default function App() {
             contentContainerStyle={{ backgroundColor: theme.backgroundSecondary, paddingHorizontal: 20 }}
           />
         </View>
-        <View style={[styles.footer, { backgroundColor: theme.backgroundPrimary }]}>
-          {editingIndex === null || showAbout ? (
-            <View style={styles.singleButtonWrapper}>{mainButton}</View>
-          ) : (
-            <View style={styles.doubleButtonWrapper}>
-              <View style={styles.halfButton}>{mainButton}</View>
-              <View style={styles.halfButton}>{doneButton}</View>
-            </View>
-          )}
-        </View>
+        {footer}
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -327,7 +329,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
   title: {
     paddingHorizontal: 20,
@@ -354,21 +356,5 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     borderWidth: 2,
     marginRight: 23,
-  },
-  singleButtonWrapper: {
-    width: "90%",
-    alignSelf: "center",
-  },
-
-  doubleButtonWrapper: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "90%",
-    alignSelf: "center",
-  },
-
-  halfButton: {
-    flex: 1,
-    marginHorizontal: 5,
   },
 });
