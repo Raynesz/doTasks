@@ -15,7 +15,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import { File, Paths } from "expo-file-system";
 import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { useTheme } from "./themes";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import debounce from "lodash.debounce";
 import { colors, TaskItem, maxTasks } from "./constants";
 import Task from "./Task";
@@ -272,6 +272,7 @@ export default function App() {
         },
       ]}
     >
+      <StatusBar style="auto" backgroundColor={theme.backgroundPrimary} translucent />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
